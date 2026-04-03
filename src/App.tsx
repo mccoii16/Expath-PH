@@ -1221,6 +1221,100 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
                     <b>Troubleshooting:</b> If you see "Failed to fetch", ensure you selected "Who has access: <b>Anyone</b>" (not "Anyone with Google Account") and that you copied the <b>Web App URL</b>, not the Editor URL.
                   </li>
                 </ol>
+
+                <div className="mt-8 pt-6 border-t border-border-dim space-y-4">
+                  <h4 className="font-bold text-sm uppercase tracking-wider text-accent">Push from Spreadsheet to Odoo CRM</h4>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    To automatically create a <b>Lead</b> in Odoo whenever a row is added to your sheet, add this function to your Apps Script:
+                  </p>
+                  <pre className="p-4 bg-background border border-border-dim rounded-xl text-[10px] font-mono overflow-x-auto whitespace-pre">
+{`// Replace your ENTIRE Apps Script with this code:
+function doPost(e) {
+  // IMPORTANT: Do NOT click "Run" in the Apps Script editor. 
+  // This function only works when triggered by the website.
+  
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var data = JSON.parse(e.postData.contents);
+  
+  // 1. Save to Spreadsheet
+  sheet.appendRow([
+    data.fullName,
+    data.email,
+    data.visaType,
+    data.message,
+    data.createdAt
+  ]);
+  
+  // 2. Push to Odoo CRM
+  pushToOdoo(data);
+  
+  return ContentService.createTextOutput("Success");
+}
+
+function pushToOdoo(data) {
+  var url = "https://expath-philippine-visa-consultancy1.odoo.com/jsonrpc";
+  var db = "expath-philippine-visa-consultancy1";
+  var username = "sheila@expathph.com";
+  var password = "YOUR_API_KEY_HERE"; 
+
+  try {
+    // 1. Authenticate to get the correct User ID (UID)
+    var authPayload = {
+      "jsonrpc": "2.0",
+      "method": "call",
+      "params": {
+        "service": "common",
+        "method": "authenticate",
+        "args": [db, username, password, {}]
+      }
+    };
+
+    var authResponse = UrlFetchApp.fetch(url, {
+      "method": "post",
+      "contentType": "application/json",
+      "payload": JSON.stringify(authPayload)
+    });
+    
+    var uid = JSON.parse(authResponse.getContentText()).result;
+
+    if (!uid) {
+      console.error("Odoo Auth Failed: Check credentials");
+      return;
+    }
+
+    // 2. Create the Lead in Odoo
+    var createPayload = {
+      "jsonrpc": "2.0",
+      "method": "call",
+      "params": {
+        "service": "object",
+        "method": "execute_kw",
+        "args": [db, uid, password, "crm.lead", "create", [{
+          "name": "Web Inquiry: " + data.fullName,
+          "contact_name": data.fullName,
+          "email_from": data.email,
+          "description": data.message + "\\nVisa: " + data.visaType,
+          "type": "lead"
+        }]]
+      }
+    };
+
+    UrlFetchApp.fetch(url, {
+      "method": "post",
+      "contentType": "application/json",
+      "payload": JSON.stringify(createPayload)
+    });
+    
+    Logger.log("Odoo Lead Created Successfully!");
+  } catch (err) {
+    Logger.log("Odoo Error: " + err.toString());
+  }
+}`}
+                  </pre>
+                  <p className="text-[10px] text-text-muted italic">
+                    Note: You'll need to generate an <b>API Key</b> in Odoo under <b>My Profile &gt; Account Security</b>.
+                  </p>
+                </div>
               </div>
             </div>
           )}
