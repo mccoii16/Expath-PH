@@ -24,6 +24,10 @@ import {
   Search,
   Copy,
   Check,
+  Plus,
+  Trash2,
+  Edit2,
+  Upload,
   Settings as SettingsIcon,
   Link as LinkIcon
 } from 'lucide-react';
@@ -37,6 +41,7 @@ import {
   doc, 
   getDoc, 
   setDoc, 
+  deleteDoc,
   onSnapshot,
   getDocFromServer
 } from 'firebase/firestore';
@@ -239,24 +244,24 @@ const Hero = ({ backgroundUrl }: { backgroundUrl: string | null }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background"></div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-        <div className="max-w-6xl">
+      <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-center md:text-left">
+        <div className="max-w-4xl md:max-w-6xl mx-auto md:mx-0">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <span className="inline-block px-4 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-accent text-xs font-bold uppercase tracking-widest mb-6">
+            <span className="inline-block px-4 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-accent text-[10px] md:text-xs font-bold uppercase tracking-widest mb-6">
               ACCREDITED MARKETER OF PRA | ACCREDITED AGENCY OF BUREAU OF IMMIGRATION
             </span>
-            <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-[0.9] mb-8 text-gradient">
+            <h1 className="text-5xl md:text-8xl font-extrabold tracking-tighter leading-[0.95] md:leading-[0.9] mb-8 text-gradient">
               YOUR GUIDE TO THE RIGHT VISA IN THE PHILIPPINES
             </h1>
-            <p className="text-xl md:text-2xl text-text-secondary font-medium max-w-2xl mb-10 leading-relaxed">
+            <p className="text-lg md:text-2xl text-text-secondary font-medium max-w-2xl mx-auto md:mx-0 mb-10 leading-relaxed">
               Helping you secure the right Philippine visa with expert guidance, full legal compliance, and a smooth, worry-free process.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <motion.a
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -296,9 +301,9 @@ const Hero = ({ backgroundUrl }: { backgroundUrl: string | null }) => {
 const Offer = () => {
   return (
     <section className="py-24 bg-background relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-xl md:text-2xl text-text-secondary max-w-4xl mx-auto leading-relaxed">
+      <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="mb-16">
+          <p className="text-lg md:text-2xl text-text-secondary max-w-4xl mx-auto leading-relaxed">
             As an accredited marketer of the <span className="text-text-primary font-bold">Philippine Retirement Authority (PRA)</span>, 
             we take care of your entire <span className="text-text-primary font-bold">SRRV visa</span> process <span className="text-accent font-bold italic">without charging any agency fees.</span>
           </p>
@@ -307,11 +312,11 @@ const Offer = () => {
         {/* Signature Offer Card */}
         <div className="relative mb-24">
           <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full transform -translate-y-1/2"></div>
-          <div className="relative glass rounded-[3rem] border border-accent/30 overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8">
-            <div className="text-3xl md:text-5xl font-bold tracking-tight text-text-primary">
+          <div className="relative glass rounded-[3rem] border border-accent/30 overflow-hidden flex flex-col md:flex-row items-center justify-center md:justify-between p-8 md:p-12 gap-8">
+            <div className="text-2xl md:text-5xl font-bold tracking-tight text-text-primary">
               Our Signature Offer:
             </div>
-            <div className="bg-gradient-to-r from-[#FFD700] via-[#FDB931] to-[#FFD700] bg-clip-text text-transparent text-5xl md:text-7xl font-black tracking-tighter py-2 border-b-4 border-[#FDB931]/30">
+            <div className="bg-gradient-to-r from-[#FFD700] via-[#FDB931] to-[#FFD700] bg-clip-text text-transparent text-4xl md:text-7xl font-black tracking-tighter py-2 border-b-4 border-[#FDB931]/30">
               $0 Agency Fees
             </div>
           </div>
@@ -389,20 +394,20 @@ const Services = () => {
 
   return (
     <section id="services" className="py-32 bg-background relative">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col justify-between mb-20">
+      <div className="max-w-7xl mx-auto px-6 text-center md:text-left">
+        <div className="flex flex-col md:flex-row justify-between mb-20">
           <div className="max-w-6xl">
-            <h2 className="text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Our Expertise</h2>
-            <h3 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-none">
+            <h2 className="text-xs md:text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Our Expertise</h2>
+            <h3 className="text-3xl md:text-6xl font-extrabold tracking-tight leading-tight md:leading-none">
               COMPREHENSIVE VISA SOLUTIONS.
             </h3>
           </div>
-          <p className="text-text-secondary max-w-6xl text-lg pt-5">
+          <p className="text-text-secondary max-w-6xl text-base md:text-lg pt-6 md:pt-5">
             From retirement to business, we provide end-to-end support for all your immigration needs in the Philippines.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           {services.map((service, i) => (
             <motion.div
               key={service.title}
@@ -422,13 +427,13 @@ const Services = () => {
               </div>
 
               {service.tag && (
-                <span className="inline-block px-3 py-1 bg-accent/20 text-accent text-[10px] font-bold uppercase rounded-full mb-4">
+                <span className="inline-block px-3 py-1 bg-accent/20 text-accent text-[9px] md:text-[10px] font-bold uppercase rounded-full mb-4">
                   {service.tag}
                 </span>
               )}
               
-              <h4 className="text-3xl font-bold mb-4">{service.title}</h4>
-              <p className="text-text-secondary text-lg leading-relaxed">{service.desc}</p>
+              <h4 className="text-2xl md:text-3xl font-bold mb-4">{service.title}</h4>
+              <p className="text-base md:text-lg leading-relaxed text-text-secondary">{service.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -438,90 +443,79 @@ const Services = () => {
 };
 
 const Testimonials = () => {
-  const testimonials = [
-    {
-      name: "Wendy & Jeremy",
-      location: "British",
-      role: "SRRV Holder",
-      text: "My husband and I used Expath services to get our SRRV earlier this year. We couldn't have done this without them. They are amazing at getting tourist visas for us whilst the process was in motion, completing paperwork, guidance all the way, and accompanying us to all the government offices, which is a daunting process and their friendly attitude and reassurances all the way through."
-    },
-    {
-      name: "Davide William Hembree",
-      location: "American",
-      role: "SRRV Holder",
-      text: "Everything went smoothly after signing on with Expath. They did all the work for me. Thank you to Sheila Ramos, Clezel, and all others helping this process to be rather easy."
-    },
-    {
-      name: "Jason Wehmhoefer",
-      role: "SRRV Holder",
-      text: "Sheila Ramos and her team were amazing to work with. They helped me and all my 10,000 questions and always kept me up to date. I can't recommend them more and thank them for all their hard work to make this possible for me."
-    },
-    {
-      name: "Mike",
-      role: "SRRV Holder",
-      text: "It was amazing, from first communication, my friend referred me to you, and I've been thinking about doing the SRRV for a while. You and your staff helped me out with the NBI, fingerprints... It was very surprising how sufficient and how little time I have to spend. It was the easiest process, the painless."
-    },
-    {
-      name: "Ronny",
-      role: "SRRV Holder",
-      text: "The application process, including the NBI, Consulate visit, and medical exams went extremely trouble free with the support from her diligent and attentive team. Sheila was true to her word and I successfully executed the SRRV application on time. I highly recommend Expath."
-    },
-    {
-      name: "Jerry",
-      role: "SRRV Holder",
-      text: "My SRRV journey with Expath has been nothing short of impressive—and memorable! Despite typhoons and an earthquake, the Expath team stayed consistently patient, helpful, and quick to respond. Sheila and Clezel guided me from start to finish with professionalism."
-    },
-    {
-      name: "Rainier",
-      location: "USA",
-      text: "I just found Expath online. Number one, you guys are good. You are too affordable and not asking for much; it's financially good. I didn't have to go to the Bureau of Immigration and NBI. You helped me digest information easily. You guys are amazing. Good job!"
-    }
-  ];
-
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTestimonials(docs);
+      setLoading(false);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'testimonials');
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const next = () => {
+    if (testimonials.length === 0) return;
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   };
 
   const prev = () => {
+    if (testimonials.length === 0) return;
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  // Get 2 testimonials to show
-  const visibleTestimonials = [
-    testimonials[currentIndex],
-    testimonials[(currentIndex + 1) % testimonials.length]
+  if (loading) return null;
+
+  // Fallback if empty
+  const displayTestimonials = testimonials.length > 0 ? testimonials : [
+    {
+      name: "Wendy & Jeremy",
+      location: "British",
+      role: "SRRV Holder",
+      text: "My husband and I used Expath services to get our SRRV earlier this year. We couldn't have done this without them. They are amazing at getting tourist visas for us whilst the process was in motion, completing paperwork, guidance all the way, and accompanying us to all the government offices, which is a daunting process and their friendly attitude and reassurances all the way through.",
+      rating: 5
+    }
   ];
+
+  // Get 2 testimonials to show
+  const visibleTestimonials = displayTestimonials.length >= 2 
+    ? [displayTestimonials[currentIndex % displayTestimonials.length], displayTestimonials[(currentIndex + 1) % displayTestimonials.length]]
+    : [displayTestimonials[currentIndex % displayTestimonials.length]];
 
   return (
     <section id="testimonials" className="py-32 bg-surface relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-border-dim to-transparent"></div>
       
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+      <div className="max-w-7xl mx-auto px-6 text-center md:text-left">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-20 gap-8">
           <div>
-            <h2 className="text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Client Success</h2>
-            <h3 className="text-4xl md:text-6xl font-extrabold tracking-tight">ADDITIONAL CLIENT'S FEEDBACK</h3>
+            <h2 className="text-xs md:text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Client Success</h2>
+            <h3 className="text-3xl md:text-6xl font-extrabold tracking-tight">ADDITIONAL CLIENT'S FEEDBACK</h3>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex gap-4 justify-center md:justify-start">
             <button 
               onClick={prev}
-              className="w-14 h-14 bg-background border border-border-dim rounded-full flex items-center justify-center hover:bg-accent hover:text-white transition-all group"
+              className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-full flex items-center justify-center hover:bg-accent hover:text-white transition-all group"
             >
-              <ChevronRight className="rotate-180 w-6 h-6" />
+              <ChevronRight className="rotate-180 w-5 h-5 md:w-6 md:h-6" />
             </button>
             <button 
               onClick={next}
-              className="w-14 h-14 bg-background border border-border-dim rounded-full flex items-center justify-center hover:bg-accent hover:text-white transition-all group"
+              className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-full flex items-center justify-center hover:bg-accent hover:text-white transition-all group"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative text-left">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -534,26 +528,50 @@ const Testimonials = () => {
               {visibleTestimonials.map((testimonial, i) => (
                 <div
                   key={`${currentIndex}-${i}`}
-                  className="p-12 bg-background border border-border-dim rounded-[3rem] relative flex flex-col h-full"
+                  className="p-12 bg-background border border-border-dim rounded-[3rem] relative flex flex-col h-[500px] md:h-[600px] overflow-hidden"
                 >
-                  <Quote className="absolute top-10 right-10 text-text-muted opacity-10 w-20 h-20" />
-                  <div className="flex gap-1 mb-6">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <p className="text-xl font-medium italic mb-8 text-text-secondary leading-relaxed flex-1">
-                    "{testimonial.text}"
-                  </p>
-                  <div className="flex items-center gap-4 mt-auto">
-                    <div className="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center font-bold text-accent shrink-0">
-                      {testimonial.name[0]}
+                  {testimonial.photoUrl && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      <img 
+                        src={testimonial.photoUrl} 
+                        alt="" 
+                        className="w-full h-full object-cover opacity-40"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
                     </div>
-                    <div>
-                      <span className="text-lg font-bold block leading-tight">{testimonial.name}</span>
-                      <span className="text-sm text-text-muted">
-                        {testimonial.location ? `${testimonial.location} • ` : ''}{testimonial.role || 'Client'}
-                      </span>
+                  )}
+                  
+                  <Quote className="absolute top-10 right-10 text-text-muted opacity-10 w-20 h-20 z-10" />
+                  
+                  <div className="mt-auto relative z-10">
+                    <div className="flex gap-1 mb-6">
+                      {[...Array(testimonial.rating || 5)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 fill-accent text-accent" />
+                      ))}
+                    </div>
+                    <p className="text-lg md:text-xl font-medium italic mb-8 text-text-secondary leading-relaxed">
+                      "{testimonial.text}"
+                    </p>
+                    <div className="flex items-center gap-4">
+                      {testimonial.photoUrl ? (
+                        <img 
+                          src={testimonial.photoUrl} 
+                          alt={testimonial.name}
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-accent/20"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-accent/20 rounded-full flex items-center justify-center font-bold text-accent shrink-0 text-sm md:text-base">
+                          {testimonial.name[0]}
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-base md:text-lg font-bold block leading-tight">{testimonial.name}</span>
+                        <span className="text-xs md:text-sm text-text-muted">
+                          {testimonial.location ? `${testimonial.location} • ` : ''}{testimonial.role || 'Client'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -564,7 +582,7 @@ const Testimonials = () => {
 
         {/* Dots */}
         <div className="flex justify-center gap-2 mt-12">
-          {testimonials.map((_, i) => (
+          {displayTestimonials.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}
@@ -579,10 +597,10 @@ const Testimonials = () => {
 
 const About = () => {
   const visaTypes = [
-    { name: "Working Visa", icon: <FileText className="w-6 h-6" /> },
-    { name: "Spousal Visa", icon: <Users className="w-6 h-6" /> },
-    { name: "Student Visa", icon: <Globe className="w-6 h-6" /> },
-    { name: "SRRV/ Retirement Visa", icon: <ShieldCheck className="w-6 h-6" /> },
+    { name: "Working Visa", icon: <FileText className="w-5 h-5" /> },
+    { name: "Spousal Visa", icon: <Users className="w-5 h-5" /> },
+    { name: "Student Visa", icon: <Globe className="w-5 h-5" /> },
+    { name: "SRRV/ Retirement Visa", icon: <ShieldCheck className="w-5 h-5" /> },
   ];
 
   return (
@@ -604,10 +622,10 @@ const About = () => {
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="glass p-10 md:p-16 rounded-[3rem] border border-border-dim flex flex-col justify-between"
+            className="glass p-10 md:p-16 rounded-[3rem] border border-border-dim flex flex-col justify-between text-center md:text-left"
           >
             <div>
-              <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-8 text-text-primary">
+              <h3 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight mb-8 text-text-primary">
                 Want to make the <br />
                 <span className="text-[#FDB931]">PHILIPPINES</span> your <br />
                 second <span className="text-accent">HOME</span>?
@@ -615,16 +633,16 @@ const About = () => {
               
               <div className="mb-12">
                 <p className="text-lg font-bold text-text-primary mb-2">We make it easy for you!</p>
-                <p className="text-text-secondary">Hassle-free, efficient, and pure customer service!</p>
+                <p className="text-sm md:text-base text-text-secondary">Hassle-free, efficient, and pure customer service!</p>
               </div>
 
-              <div className="space-y-6 mb-12">
+              <div className="space-y-4 md:space-y-6 mb-12">
                 {visaTypes.map((visa) => (
-                  <div key={visa.name} className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
+                  <div key={visa.name} className="flex items-center justify-center md:justify-start gap-4">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
                       {visa.icon}
                     </div>
-                    <span className="text-xl font-bold text-text-primary">{visa.name}</span>
+                    <span className="text-lg md:text-xl font-bold text-text-primary">{visa.name}</span>
                   </div>
                 ))}
               </div>
@@ -640,10 +658,10 @@ const About = () => {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="glass p-10 md:p-16 rounded-[3rem] border border-border-dim"
+            className="glass p-10 md:p-16 rounded-[3rem] border border-border-dim text-center md:text-left"
           >
             <div className="mb-16">
-              <h4 className="text-3xl font-bold mb-6 text-text-primary border-b border-border-dim pb-4 inline-block">About Us</h4>
+              <h4 className="text-2xl md:text-3xl font-bold mb-6 text-text-primary border-b border-border-dim pb-4 inline-block">About Us</h4>
               <p className="text-lg text-text-secondary leading-relaxed">
                 <span className="text-text-primary font-bold">Expath Philippine Visa Consultancy</span> is a duly accredited marketer of the 
                 <span className="text-text-primary font-bold"> Philippine Retirement Authority (PRA)</span> and Consultancy of the 
@@ -659,25 +677,25 @@ const About = () => {
             </div>
 
             <div>
-              <h4 className="text-3xl font-bold mb-8 text-text-primary border-b border-border-dim pb-4 inline-block">Contact Us</h4>
-              <div className="space-y-8">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center text-accent">
-                    <Phone className="w-6 h-6" />
+              <h4 className="text-2xl md:text-3xl font-bold mb-8 text-text-primary border-b border-border-dim pb-4 inline-block">Contact Us</h4>
+              <div className="space-y-6 md:space-y-8">
+                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                  <div className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center text-accent">
+                    <Phone className="w-5 h-5 md:w-6 md:h-6" />
                   </div>
-                  <span className="text-xl font-bold text-text-primary">0946 341 2863</span>
+                  <span className="text-lg md:text-xl font-bold text-text-primary">0946 341 2863</span>
                 </div>
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center text-accent">
-                    <Mail className="w-6 h-6" />
+                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                  <div className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center text-accent">
+                    <Mail className="w-5 h-5 md:w-6 md:h-6" />
                   </div>
-                  <span className="text-xl font-bold text-text-primary">inquiry@expathph.com</span>
+                  <span className="text-lg md:text-xl font-bold text-text-primary">inquiry@expathph.com</span>
                 </div>
-                <div className="flex items-start gap-6">
-                  <div className="w-14 h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center text-accent shrink-0">
-                    <MapPin className="w-6 h-6" />
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
+                  <div className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center text-accent shrink-0">
+                    <MapPin className="w-5 h-5 md:w-6 md:h-6" />
                   </div>
-                  <span className="text-xl font-bold text-text-primary leading-tight">
+                  <span className="text-lg md:text-xl font-bold text-text-primary leading-tight">
                     2nd Floor, Eastern Shipping Lines, MJ Cuenco Avenue, Cebu City (near Plaza Independencia)
                   </span>
                 </div>
@@ -685,18 +703,18 @@ const About = () => {
             </div>
 
             {/* Accreditation Logos */}
-            <div className="mt-16 flex justify-end gap-6 opacity-80 grayscale hover:grayscale-0 transition-all">
+            <div className="mt-16 flex justify-center md:justify-end gap-6 opacity-80 grayscale hover:grayscale-0 transition-all">
               <img 
                 src="https://www.pra.gov.ph/wp-content/uploads/2021/03/PRA-Logo-2021.png" 
                 alt="PRA Logo" 
-                className="h-16 object-contain"
+                className="h-12 md:h-16 object-contain"
                 referrerPolicy="no-referrer"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
               />
               <img 
                 src="https://immigration.gov.ph/images/logo/bi_logo.png" 
                 alt="BI Logo" 
-                className="h-16 object-contain"
+                className="h-12 md:h-16 object-contain"
                 referrerPolicy="no-referrer"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
               />
@@ -768,47 +786,49 @@ const Contact = () => {
 
   return (
     <section id="contact" className="py-32 bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-          <div>
-            <h2 className="text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Get in Touch</h2>
-            <h3 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">READY TO <br />SETTLE IN?</h3>
-            <p className="text-xl text-text-secondary mb-12 max-w-md">
-              Contact Sheila today for a free initial assessment of your visa requirements.
-            </p>
+      <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="max-w-3xl mx-auto mb-20">
+          <h2 className="text-xs md:text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Get in Touch</h2>
+          <h3 className="text-4xl md:text-7xl font-extrabold tracking-tight mb-8">READY TO <br className="hidden md:block" /> SETTLE IN?</h3>
+          <p className="text-lg md:text-xl text-text-secondary mx-auto max-w-md">
+            Contact Sheila today for a free initial assessment of your visa requirements.
+          </p>
+        </div>
 
-            <div className="space-y-8">
-              <div className="flex items-center gap-6">
-                <div className="w-14 h-14 bg-surface border border-border-dim rounded-2xl flex items-center justify-center">
-                  <Mail className="text-accent w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs text-text-muted font-bold uppercase mb-1">Email Us</p>
-                  <a href="mailto:sheila@expathph.com" className="text-xl font-bold hover:text-accent transition-colors">sheila@expathph.com</a>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+          <div className="space-y-6 flex flex-col items-center">
+            <div className="w-full max-w-md p-8 bg-surface border border-border-dim rounded-[2.5rem] flex flex-col md:flex-row items-center gap-4 md:gap-6">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center">
+                <Mail className="text-accent w-5 h-5 md:w-6 md:h-6" />
               </div>
-              <div className="flex items-center gap-6">
-                <div className="w-14 h-14 bg-surface border border-border-dim rounded-2xl flex items-center justify-center">
-                  <Phone className="text-accent w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs text-text-muted font-bold uppercase mb-1">Call Us</p>
-                  <a href="tel:+639463412863" className="text-xl font-bold hover:text-accent transition-colors">+63 946-341-2863</a>
-                </div>
+              <div className="text-center md:text-left">
+                <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Email Us</p>
+                <a href="mailto:sheila@expathph.com" className="text-lg md:text-xl font-bold hover:text-accent transition-colors">sheila@expathph.com</a>
               </div>
-              <div className="flex items-center gap-6">
-                <div className="w-14 h-14 bg-surface border border-border-dim rounded-2xl flex items-center justify-center">
-                  <MapPin className="text-accent w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs text-text-muted font-bold uppercase mb-1">Visit Us</p>
-                  <p className="text-xl font-bold">MJ Cuenco Avenue, Cebu City</p>
-                </div>
+            </div>
+            
+            <div className="w-full max-w-md p-8 bg-surface border border-border-dim rounded-[2.5rem] flex flex-col md:flex-row items-center gap-4 md:gap-6">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center">
+                <Phone className="text-accent w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="text-center md:text-left">
+                <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Call Us</p>
+                <a href="tel:+639463412863" className="text-lg md:text-xl font-bold hover:text-accent transition-colors">+63 946-341-2863</a>
+              </div>
+            </div>
+
+            <div className="w-full max-w-md p-8 bg-surface border border-border-dim rounded-[2.5rem] flex flex-col md:flex-row items-center gap-4 md:gap-6">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-background border border-border-dim rounded-2xl flex items-center justify-center">
+                <MapPin className="text-accent w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="text-center md:text-left">
+                <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Visit Us</p>
+                <p className="text-lg md:text-xl font-bold">MJ Cuenco Avenue, Cebu City</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-surface border border-border-dim p-10 md:p-16 rounded-[3rem]">
+          <div className="bg-surface border border-border-dim p-8 md:p-12 rounded-[3rem] text-left mx-auto lg:mx-0 w-full max-w-2xl">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -883,10 +903,11 @@ const Contact = () => {
 
 const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [inquiries, setInquiries] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
   const [visaFilter, setVisaFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'settings'>('inquiries');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'settings' | 'testimonials'>('inquiries');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -894,6 +915,18 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [confirmError, setConfirmError] = useState('');
+  
+  // Testimonial Form State
+  const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+  const [isSavingTestimonial, setIsSavingTestimonial] = useState(false);
+  const [testimonialForm, setTestimonialForm] = useState({
+    name: '',
+    location: '',
+    role: '',
+    text: '',
+    photoUrl: '',
+    rating: 5
+  });
 
   useEffect(() => {
     const unsubscribeInquiries = onSnapshot(collection(db, 'inquiries'), (snapshot) => {
@@ -905,6 +938,14 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
       handleFirestoreError(error, OperationType.LIST, 'inquiries');
     });
 
+    const unsubscribeTestimonials = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      docs.sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      setTestimonials(docs);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'testimonials');
+    });
+
     const unsubscribeSettings = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
       if (snapshot.exists()) {
         setWebhookUrl(snapshot.data().webhookUrl || '');
@@ -913,6 +954,7 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
 
     return () => {
       unsubscribeInquiries();
+      unsubscribeTestimonials();
       unsubscribeSettings();
     };
   }, []);
@@ -962,6 +1004,121 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
     } finally {
       setIsVerifying(false);
       setIsSavingSettings(false);
+    }
+  };
+
+  const handleSaveTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingTestimonial(true);
+    try {
+      const data = {
+        ...testimonialForm,
+        createdAt: editingTestimonial ? editingTestimonial.createdAt : serverTimestamp()
+      };
+      
+      if (editingTestimonial) {
+        await setDoc(doc(db, 'testimonials', editingTestimonial.id), data);
+      } else {
+        await addDoc(collection(db, 'testimonials'), data);
+      }
+      
+      setEditingTestimonial(null);
+      setTestimonialForm({ name: '', location: '', role: '', text: '', photoUrl: '', rating: 5 });
+      alert('Testimonial saved successfully!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'testimonials');
+    } finally {
+      setIsSavingTestimonial(false);
+    }
+  };
+
+  const handleRestoreOriginals = async () => {
+    if (!window.confirm('This will import the 7 original testimonials into your database. Continue?')) return;
+    
+    const originals = [
+      {
+        name: "Wendy & Jeremy",
+        location: "British",
+        role: "SRRV Holder",
+        text: "My husband and I used Expath services to get our SRRV earlier this year. We couldn't have done this without them. They are amazing at getting tourist visas for us whilst the process was in motion, completing paperwork, guidance all the way, and accompanying us to all the government offices, which is a daunting process and their friendly attitude and reassurances all the way through.",
+        rating: 5
+      },
+      {
+        name: "Davide William Hembree",
+        location: "American",
+        role: "SRRV Holder",
+        text: "Everything went smoothly after signing on with Expath. They did all the work for me. Thank you to Sheila Ramos, Clezel, and all others helping this process to be rather easy.",
+        rating: 5
+      },
+      {
+        name: "Jason Wehmhoefer",
+        role: "SRRV Holder",
+        text: "Sheila Ramos and her team were amazing to work with. They helped me and all my 10,000 questions and always kept me up to date. I can't recommend them more and thank them for all their hard work to make this possible for me.",
+        rating: 5
+      },
+      {
+        name: "Mike",
+        role: "SRRV Holder",
+        text: "It was amazing, from first communication, my friend referred me to you, and I've been thinking about doing the SRRV for a while. You and your staff helped me out with the NBI, fingerprints... It was very surprising how sufficient and how little time I have to spend. It was the easiest process, the painless.",
+        rating: 5
+      },
+      {
+        name: "Ronny",
+        role: "SRRV Holder",
+        text: "The application process, including the NBI, Consulate visit, and medical exams went extremely trouble free with the support from her diligent and attentive team. Sheila was true to her word and I successfully executed the SRRV application on time. I highly recommend Expath.",
+        rating: 5
+      },
+      {
+        name: "Jerry",
+        role: "SRRV Holder",
+        text: "My SRRV journey with Expath has been nothing short of impressive—and memorable! Despite typhoons and an earthquake, the Expath team stayed consistently patient, helpful, and quick to respond. Sheila and Clezel guided me from start to finish with professionalism.",
+        rating: 5
+      },
+      {
+        name: "Rainier",
+        location: "USA",
+        text: "I just found Expath online. Number one, you guys are good. You are too affordable and not asking for much; it's financially good. I didn't have to go to the Bureau of Immigration and NBI. You helped me digest information easily. You guys are amazing. Good job!",
+        rating: 5
+      }
+    ];
+
+    setIsSavingTestimonial(true);
+    try {
+      for (const t of originals) {
+        await addDoc(collection(db, 'testimonials'), {
+          ...t,
+          createdAt: serverTimestamp()
+        });
+      }
+      alert('Original testimonials restored successfully!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'testimonials');
+    } finally {
+      setIsSavingTestimonial(false);
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this testimonial?')) return;
+    try {
+      await deleteDoc(doc(db, 'testimonials', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `testimonials/${id}`);
+    }
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        alert('File is too large. Please select an image under 1MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTestimonialForm({ ...testimonialForm, photoUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -1058,6 +1215,12 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
                   <Mail className={activeTab === 'inquiries' ? 'text-accent' : ''} /> Inquiries
                 </button>
                 <button 
+                  onClick={() => setActiveTab('testimonials')}
+                  className={`text-2xl font-bold flex items-center gap-2 transition-colors ${activeTab === 'testimonials' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                >
+                  <Star className={activeTab === 'testimonials' ? 'text-accent' : ''} /> Testimonials
+                </button>
+                <button 
                   onClick={() => setActiveTab('settings')}
                   className={`text-2xl font-bold flex items-center gap-2 transition-colors ${activeTab === 'settings' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                 >
@@ -1140,7 +1303,191 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-          {activeTab === 'inquiries' ? (
+          {activeTab === 'testimonials' ? (
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Manage Testimonials</h3>
+                <div className="flex gap-3">
+                  {testimonials.length === 0 && (
+                    <button 
+                      onClick={handleRestoreOriginals}
+                      disabled={isSavingTestimonial}
+                      className="flex items-center gap-2 px-4 py-2 bg-surface border border-border-dim rounded-xl text-sm font-bold hover:bg-background transition-colors disabled:opacity-50"
+                    >
+                      <Download className="w-4 h-4" /> Restore Originals
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setEditingTestimonial(null);
+                      setTestimonialForm({ name: '', location: '', role: '', text: '', photoUrl: '', rating: 5 });
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-xl text-sm font-bold hover:bg-accent-hover transition-colors"
+                  >
+                    <Plus className="w-4 h-4" /> Add New
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Form */}
+                <div className="bg-background border border-border-dim p-6 rounded-2xl space-y-6 h-fit sticky top-0">
+                  <h4 className="font-bold text-lg">{editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}</h4>
+                  <form onSubmit={handleSaveTestimonial} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold uppercase text-text-muted ml-1">Client Name</label>
+                      <input 
+                        type="text"
+                        required
+                        value={testimonialForm.name}
+                        onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })}
+                        className="w-full bg-surface border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold uppercase text-text-muted ml-1">Location</label>
+                        <input 
+                          type="text"
+                          value={testimonialForm.location}
+                          onChange={(e) => setTestimonialForm({ ...testimonialForm, location: e.target.value })}
+                          className="w-full bg-surface border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold uppercase text-text-muted ml-1">Role</label>
+                        <input 
+                          type="text"
+                          value={testimonialForm.role}
+                          onChange={(e) => setTestimonialForm({ ...testimonialForm, role: e.target.value })}
+                          className="w-full bg-surface border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold uppercase text-text-muted ml-1">Rating</label>
+                      <select 
+                        value={testimonialForm.rating}
+                        onChange={(e) => setTestimonialForm({ ...testimonialForm, rating: Number(e.target.value) })}
+                        className="w-full bg-surface border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                      >
+                        {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} Stars</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold uppercase text-text-muted ml-1">Testimonial Text</label>
+                      <textarea 
+                        required
+                        rows={4}
+                        value={testimonialForm.text}
+                        onChange={(e) => setTestimonialForm({ ...testimonialForm, text: e.target.value })}
+                        className="w-full bg-surface border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors resize-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold uppercase text-text-muted ml-1">Client Photo</label>
+                      <div className="flex items-center gap-4">
+                        {testimonialForm.photoUrl && (
+                          <div className="w-16 h-16 rounded-xl overflow-hidden border border-border-dim shrink-0">
+                            <img src={testimonialForm.photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <label className="flex-1 flex items-center justify-center gap-2 px-4 py-4 bg-surface border border-dashed border-border-dim rounded-xl hover:border-accent transition-colors cursor-pointer group">
+                          <Upload className="w-5 h-5 text-text-muted group-hover:text-accent" />
+                          <span className="text-xs font-bold text-text-muted group-hover:text-text-primary">Upload Photo (Max 1MB)</span>
+                          <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                        </label>
+                        {testimonialForm.photoUrl && (
+                          <button 
+                            type="button"
+                            onClick={() => setTestimonialForm({ ...testimonialForm, photoUrl: '' })}
+                            className="p-2 text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button 
+                        type="submit"
+                        disabled={isSavingTestimonial}
+                        className="flex-1 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-colors disabled:opacity-50"
+                      >
+                        {isSavingTestimonial ? 'Saving...' : editingTestimonial ? 'Update Testimonial' : 'Save Testimonial'}
+                      </button>
+                      {editingTestimonial && (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setEditingTestimonial(null);
+                            setTestimonialForm({ name: '', location: '', role: '', text: '', photoUrl: '', rating: 5 });
+                          }}
+                          className="px-6 py-3 bg-surface border border-border-dim text-text-primary font-bold rounded-xl hover:bg-background transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* List */}
+                <div className="space-y-4">
+                  {testimonials.length === 0 ? (
+                    <p className="text-text-muted italic">No testimonials added yet.</p>
+                  ) : (
+                    testimonials.map((t) => (
+                      <div key={t.id} className="p-6 bg-background border border-border-dim rounded-2xl flex gap-4 group">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-border-dim shrink-0 bg-surface flex items-center justify-center">
+                          {t.photoUrl ? (
+                            <img src={t.photoUrl} alt={t.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xl font-bold text-accent">{t.name[0]}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start mb-1">
+                            <div>
+                              <h5 className="font-bold truncate">{t.name}</h5>
+                              <p className="text-[10px] text-text-muted uppercase font-bold">
+                                {t.location} {t.location && t.role ? '•' : ''} {t.role}
+                              </p>
+                            </div>
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                onClick={() => {
+                                  setEditingTestimonial(t);
+                                  setTestimonialForm({
+                                    name: t.name,
+                                    location: t.location || '',
+                                    role: t.role || '',
+                                    text: t.text,
+                                    photoUrl: t.photoUrl || '',
+                                    rating: t.rating || 5
+                                  });
+                                }}
+                                className="p-1.5 text-text-muted hover:text-accent transition-colors"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteTestimonial(t.id)}
+                                className="p-1.5 text-text-muted hover:text-red-400 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-text-secondary line-clamp-3 italic">"{t.text}"</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'inquiries' ? (
             <div className="space-y-4">
               {filteredInquiries.length === 0 ? (
                 <p className="text-text-muted italic">No inquiries match your filters.</p>

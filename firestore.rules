@@ -118,7 +118,7 @@ service cloud.firestore {
     match /settings/{settingId} {
       function isValidSettings(data) {
         return data.keys().hasAll(['webhookUrl', 'updatedAt']) &&
-               isValidUrl(data.url) &&
+               isValidUrl(data.webhookUrl) &&
                data.updatedAt is timestamp;
       }
       
@@ -127,6 +127,26 @@ service cloud.firestore {
       
       // Only admins can update settings
       allow write: if isAdmin();
+    }
+
+    match /testimonials/{testimonialId} {
+      function isValidTestimonial(data) {
+        return data.keys().hasAll(['name', 'text', 'createdAt']) &&
+               data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+               data.text is string && data.text.size() > 0 && data.text.size() <= 2000 &&
+               data.createdAt is timestamp &&
+               (!('location' in data) || (data.location is string && data.location.size() <= 100)) &&
+               (!('role' in data) || (data.role is string && data.role.size() <= 100)) &&
+               (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 1048576)) &&
+               (!('rating' in data) || (data.rating is number && data.rating >= 1 && data.rating <= 5));
+      }
+
+      // Anyone can read testimonials
+      allow read: if true;
+      
+      // Only admins can manage testimonials
+      allow write: if isAdmin() && isValidTestimonial(request.resource.data);
+      allow delete: if isAdmin();
     }
   }
 }
