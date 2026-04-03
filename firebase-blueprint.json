@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "A form inquiry from a potential client.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string", "description": "The full name of the inquirer." },
+        "email": { "type": "string", "format": "email", "description": "The email address of the inquirer." },
+        "visaType": { "type": "string", "description": "The type of visa they are interested in." },
+        "message": { "type": "string", "description": "The message or details provided." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the inquiry was submitted." },
+        "status": { "type": "string", "enum": ["new", "contacted", "closed"], "description": "The current status of the inquiry." }
+      },
+      "required": ["fullName", "email", "visaType", "message", "createdAt"]
+    },
+    "Asset": {
+      "title": "Asset",
+      "description": "Metadata for uploaded assets like logos and background images.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["logo", "background"], "description": "The type of asset." },
+        "url": { "type": "string", "format": "uri", "description": "The URL of the asset." },
+        "name": { "type": "string", "description": "The name of the file." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "When the asset was last updated." }
+      },
+      "required": ["type", "url", "updatedAt"]
+    },
+    "Username": {
+      "title": "Username",
+      "description": "A mapping of a unique username to an email address.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "The email address associated with this username." },
+        "uid": { "type": "string", "description": "The Firebase Auth UID associated with this username." }
+      },
+      "required": ["email", "uid"]
+    }
+  },
+  "firestore": {
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Collection of client inquiries."
+    },
+    "/assets/{assetId}": {
+      "schema": "Asset",
+      "description": "Collection of site assets like logos and background images."
+    },
+    "/usernames/{username}": {
+      "schema": "Username",
+      "description": "Mapping of usernames to email addresses for login."
+    }
+  }
+}
