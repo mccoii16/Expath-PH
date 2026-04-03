@@ -43,7 +43,9 @@ import {
 import { 
   onAuthStateChanged, 
   User,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from 'firebase/auth';
 
 // --- Types & Constants ---
@@ -888,6 +890,10 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [webhookUrl, setWebhookUrl] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
 
   useEffect(() => {
     const unsubscribeInquiries = onSnapshot(collection(db, 'inquiries'), (snapshot) => {
@@ -919,17 +925,42 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
     }
   };
 
-  const handleSaveSettings = async () => {
-    setIsSavingSettings(true);
+  const handleSaveSettings = () => {
+    setShowConfirmModal(true);
+    setConfirmError('');
+    setConfirmPassword('');
+  };
+
+  const handleConfirmSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirmPassword) return;
+
+    setIsVerifying(true);
+    setConfirmError('');
+
     try {
-      await setDoc(doc(db, 'settings', 'global'), {
-        webhookUrl,
-        updatedAt: serverTimestamp()
-      });
-      alert('Settings saved successfully!');
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, 'settings/global');
+      if (auth.currentUser && auth.currentUser.email) {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, confirmPassword);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        
+        // If successful, proceed with save
+        setIsSavingSettings(true);
+        await setDoc(doc(db, 'settings', 'global'), {
+          webhookUrl,
+          updatedAt: serverTimestamp()
+        });
+        alert('Settings saved successfully!');
+        setShowConfirmModal(false);
+      }
+    } catch (error: any) {
+      console.error('Re-auth failed:', error);
+      if (error.code === 'auth/wrong-password') {
+        setConfirmError('Incorrect password. Please try again.');
+      } else {
+        setConfirmError('Security verification failed. Please try again.');
+      }
     } finally {
+      setIsVerifying(false);
       setIsSavingSettings(false);
     }
   };
@@ -1326,6 +1357,73 @@ function pushToOdoo(data) {
           </div>
           <button onClick={() => auth.signOut()} className="text-xs font-bold text-red-500 uppercase">Logout</button>
         </div>
+
+        {/* Security Confirmation Modal */}
+        <AnimatePresence>
+          {showConfirmModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => !isVerifying && setShowConfirmModal(false)}
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative w-full max-w-md bg-surface border border-border-dim p-8 rounded-[2.5rem] shadow-2xl"
+              >
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ShieldCheck className="text-accent w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-bold">Security Verification</h3>
+                  <p className="text-sm text-text-secondary">
+                    Please enter your password to confirm changes to the integration settings.
+                  </p>
+                  
+                  <form onSubmit={handleConfirmSave} className="space-y-4 mt-6">
+                    <div className="space-y-2 text-left">
+                      <label className="text-xs font-bold uppercase text-text-muted ml-2">Admin Password</label>
+                      <input 
+                        type="password"
+                        required
+                        autoFocus
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full bg-background border border-border-dim rounded-2xl px-6 py-4 focus:outline-none focus:border-accent transition-colors text-text-primary"
+                        placeholder="••••••••"
+                      />
+                      {confirmError && (
+                        <p className="text-red-500 text-[10px] font-bold ml-2">{confirmError}</p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button 
+                        type="button"
+                        onClick={() => setShowConfirmModal(false)}
+                        disabled={isVerifying}
+                        className="flex-1 py-4 bg-background border border-border-dim text-text-primary font-bold rounded-2xl hover:bg-surface transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={isVerifying || !confirmPassword}
+                        className="flex-1 py-4 bg-accent text-white font-bold rounded-2xl hover:bg-accent-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {isVerifying ? <Loader2 className="animate-spin w-4 h-4" /> : 'Confirm'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
