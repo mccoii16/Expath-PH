@@ -1289,7 +1289,8 @@ function pushToOdoo(data) {
   var password = "YOUR_API_KEY_HERE"; 
 
   try {
-    // 1. Authenticate to get the correct User ID (UID)
+    // 1. Authenticate
+    Logger.log("Attempting Odoo Auth for: " + username);
     var authPayload = {
       "jsonrpc": "2.0",
       "method": "call",
@@ -1303,17 +1304,26 @@ function pushToOdoo(data) {
     var authResponse = UrlFetchApp.fetch(url, {
       "method": "post",
       "contentType": "application/json",
-      "payload": JSON.stringify(authPayload)
+      "payload": JSON.stringify(authPayload),
+      "muteHttpExceptions": true
     });
     
-    var uid = JSON.parse(authResponse.getContentText()).result;
+    var authResult = JSON.parse(authResponse.getContentText());
+    Logger.log("Auth Response: " + authResponse.getContentText());
 
-    if (!uid) {
-      console.error("Odoo Auth Failed: Check credentials");
+    if (authResult.error) {
+      Logger.log("Odoo Auth Error: " + JSON.stringify(authResult.error));
       return;
     }
 
-    // 2. Create the Lead in Odoo
+    var uid = authResult.result;
+    if (!uid) {
+      Logger.log("Odoo Auth Failed: Invalid credentials or DB name.");
+      return;
+    }
+
+    // 2. Create the Lead
+    Logger.log("Creating Lead for: " + data.fullName + " (UID: " + uid + ")");
     var createPayload = {
       "jsonrpc": "2.0",
       "method": "call",
@@ -1324,21 +1334,29 @@ function pushToOdoo(data) {
           "name": "Web Inquiry: " + data.fullName,
           "contact_name": data.fullName,
           "email_from": data.email,
-          "description": data.message + "\\nVisa: " + data.visaType,
+          "description": "Message: " + data.message + "\\nVisa Type: " + data.visaType,
           "type": "lead"
         }]]
       }
     };
 
-    UrlFetchApp.fetch(url, {
+    var createResponse = UrlFetchApp.fetch(url, {
       "method": "post",
       "contentType": "application/json",
-      "payload": JSON.stringify(createPayload)
+      "payload": JSON.stringify(createPayload),
+      "muteHttpExceptions": true
     });
     
-    Logger.log("Odoo Lead Created Successfully!");
+    var createResult = JSON.parse(createResponse.getContentText());
+    Logger.log("Create Response: " + createResponse.getContentText());
+
+    if (createResult.error) {
+      Logger.log("Odoo Create Error: " + JSON.stringify(createResult.error));
+    } else {
+      Logger.log("Odoo Lead Created Successfully! ID: " + createResult.result);
+    }
   } catch (err) {
-    Logger.log("Odoo Error: " + err.toString());
+    Logger.log("Apps Script Error: " + err.toString());
   }
 }`}
                   </pre>
