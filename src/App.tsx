@@ -20,7 +20,12 @@ import {
   AlertCircle,
   Download,
   Sun,
-  Moon
+  Moon,
+  Search,
+  Copy,
+  Check,
+  Settings as SettingsIcon,
+  Link as LinkIcon
 } from 'lucide-react';
 
 // Firebase Imports
@@ -718,11 +723,37 @@ const Contact = () => {
 
     try {
       const path = 'inquiries';
-      await addDoc(collection(db, path), {
+      const inquiryData = {
         ...formData,
         createdAt: serverTimestamp(),
         status: 'new'
-      });
+      };
+      
+      await addDoc(collection(db, path), inquiryData);
+
+      // Trigger Webhook if configured
+      try {
+        const settingsSnap = await getDoc(doc(db, 'settings', 'global'));
+        if (settingsSnap.exists() && settingsSnap.data().webhookUrl) {
+          // Use 'no-cors' mode for Google Apps Script to avoid CORS preflight issues
+          await fetch(settingsSnap.data().webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 
+              'Content-Type': 'text/plain' // Using text/plain with no-cors to avoid preflight
+            },
+            body: JSON.stringify({
+              ...inquiryData,
+              createdAt: new Date().toISOString(),
+              source: window.location.origin
+            })
+          });
+        }
+      } catch (webhookError) {
+        console.error('Webhook failed:', webhookError);
+        // Don't fail the whole submission if just the webhook fails
+      }
+
       setSubmitStatus('success');
       setFormData({ fullName: '', email: '', visaType: 'SRRV (Retirement)', message: '' });
     } catch (error) {
@@ -850,6 +881,13 @@ const Contact = () => {
 
 const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [inquiries, setInquiries] = useState<any[]>([]);
+  const [visaFilter, setVisaFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'settings'>('inquiries');
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const unsubscribeInquiries = onSnapshot(collection(db, 'inquiries'), (snapshot) => {
@@ -861,7 +899,16 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
       handleFirestoreError(error, OperationType.LIST, 'inquiries');
     });
 
-    return () => unsubscribeInquiries();
+    const unsubscribeSettings = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        setWebhookUrl(snapshot.data().webhookUrl || '');
+      }
+    });
+
+    return () => {
+      unsubscribeInquiries();
+      unsubscribeSettings();
+    };
   }, []);
 
   const handleUpdateStatus = async (id: string, status: string) => {
@@ -872,16 +919,52 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
     }
   };
 
-  const handleExportCSV = () => {
-    if (inquiries.length === 0) return;
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      await setDoc(doc(db, 'settings', 'global'), {
+        webhookUrl,
+        updatedAt: serverTimestamp()
+      });
+      alert('Settings saved successfully!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'settings/global');
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
-    const headers = ['Full Name', 'Email', 'Visa Type', 'Status', 'Date', 'Message'];
-    const rows = inquiries.map(inq => [
+  const visaTypes = ['all', ...new Set(inquiries.map(inq => inq.visaType).filter(Boolean))];
+
+  const filteredInquiries = inquiries.filter(inq => {
+    const matchesVisa = visaFilter === 'all' || inq.visaType === visaFilter;
+    
+    let matchesDate = true;
+    if (dateFilter) {
+      const inqDate = inq.createdAt?.toDate ? inq.createdAt.toDate().toISOString().split('T')[0] : '';
+      matchesDate = inqDate === dateFilter;
+    }
+
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery || 
+      inq.fullName?.toLowerCase().includes(searchLower) ||
+      inq.email?.toLowerCase().includes(searchLower) ||
+      inq.visaType?.toLowerCase().includes(searchLower) ||
+      inq.message?.toLowerCase().includes(searchLower);
+    
+    return matchesVisa && matchesDate && matchesSearch;
+  }).slice(0, 10);
+
+  const handleExportCSV = () => {
+    if (filteredInquiries.length === 0) return;
+
+    const headers = ['Full Name', 'Email', 'Visa Type', 'Status', 'Date Submitted', 'Message'];
+    const rows = filteredInquiries.map(inq => [
       `"${inq.fullName}"`,
       `"${inq.email}"`,
       `"${inq.visaType}"`,
       `"${inq.status}"`,
-      `"${inq.createdAt?.toDate ? inq.createdAt.toDate().toLocaleDateString() : 'N/A'}"`,
+      `"${inq.createdAt?.toDate ? inq.createdAt.toDate().toISOString() : 'N/A'}"`,
       `"${inq.message?.replace(/"/g, '""')}"`
     ]);
 
@@ -901,6 +984,30 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
     document.body.removeChild(link);
   };
 
+  const handleCopyToClipboard = () => {
+    if (filteredInquiries.length === 0) return;
+
+    const headers = ['Full Name', 'Email', 'Visa Type', 'Status', 'Date Submitted', 'Message'];
+    const rows = filteredInquiries.map(inq => [
+      inq.fullName,
+      inq.email,
+      inq.visaType,
+      inq.status,
+      inq.createdAt?.toDate ? inq.createdAt.toDate().toLocaleString() : 'N/A',
+      inq.message
+    ]);
+
+    const tsvContent = [
+      headers.join('\t'),
+      ...rows.map(row => row.join('\t'))
+    ].join('\n');
+
+    navigator.clipboard.writeText(tsvContent).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -908,71 +1015,215 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
       exit={{ opacity: 0, y: 20 }}
       className="w-full h-full flex flex-col"
     >
-      <div className="relative w-full h-full flex flex-col">
-        <button onClick={onClose} className="absolute top-6 right-6 text-text-secondary hover:text-text-primary z-10">
-          <X />
-        </button>
-        
-        <div className="flex justify-between items-center mb-8 border-b border-border-dim pb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Mail className="text-accent" /> Client Inquiries ({inquiries.length})
-          </h2>
-          <button 
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-background border border-border-dim rounded-xl text-xs font-bold uppercase hover:bg-surface transition-colors"
-          >
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
+      <div className="w-full h-full flex flex-col">
+        <div className="flex flex-col gap-6 mb-8 border-b border-border-dim pb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setActiveTab('inquiries')}
+                  className={`text-2xl font-bold flex items-center gap-2 transition-colors ${activeTab === 'inquiries' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                >
+                  <Mail className={activeTab === 'inquiries' ? 'text-accent' : ''} /> Inquiries
+                </button>
+                <button 
+                  onClick={() => setActiveTab('settings')}
+                  className={`text-2xl font-bold flex items-center gap-2 transition-colors ${activeTab === 'settings' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                >
+                  <SettingsIcon className={activeTab === 'settings' ? 'text-accent' : ''} /> Settings
+                </button>
+              </div>
+              <button 
+                onClick={onClose} 
+                className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase text-text-muted hover:text-accent transition-colors"
+              >
+                <ChevronRight className="w-3 h-3 rotate-180" /> Go back to Home page
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              {activeTab === 'inquiries' && (
+                <>
+                  <button 
+                    onClick={handleCopyToClipboard}
+                    className="flex items-center gap-2 px-4 py-2 bg-background border border-border-dim rounded-xl text-xs font-bold uppercase hover:bg-surface transition-colors"
+                    title="Copy to clipboard for Spreadsheet"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    {copied ? 'Copied!' : 'Copy for Sheets'}
+                  </button>
+                  <button 
+                    onClick={handleExportCSV}
+                    className="flex items-center gap-2 px-4 py-2 bg-background border border-border-dim rounded-xl text-xs font-bold uppercase hover:bg-surface transition-colors"
+                  >
+                    <Download className="w-4 h-4" /> Export CSV
+                  </button>
+                </>
+              )}
+              <button 
+                onClick={onClose} 
+                className="md:hidden p-2 text-text-secondary hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {activeTab === 'inquiries' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase text-text-muted ml-1">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                  <input 
+                    type="text"
+                    placeholder="Search name, email, message..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-background border border-border-dim rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase text-text-muted ml-1">Filter by Visa Type</label>
+                <select 
+                  value={visaFilter}
+                  onChange={(e) => setVisaFilter(e.target.value)}
+                  className="w-full bg-background border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                >
+                  {visaTypes.map(type => (
+                    <option key={type} value={type}>{type === 'all' ? 'All Visas' : type}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase text-text-muted ml-1">Filter by Date</label>
+                <input 
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-full bg-background border border-border-dim rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-          <div className="space-y-4">
-            {inquiries.length === 0 ? (
-              <p className="text-text-muted italic">No inquiries yet.</p>
-            ) : (
-              inquiries.map((inquiry) => (
-                <div key={inquiry.id} className="p-6 bg-background border border-border-dim rounded-2xl space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="text-lg font-bold">{inquiry.fullName}</h4>
-                      <p className="text-sm text-accent">{inquiry.email}</p>
+          {activeTab === 'inquiries' ? (
+            <div className="space-y-4">
+              {filteredInquiries.length === 0 ? (
+                <p className="text-text-muted italic">No inquiries match your filters.</p>
+              ) : (
+                filteredInquiries.map((inquiry) => (
+                  <div key={inquiry.id} className="p-6 bg-background border border-border-dim rounded-2xl space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-lg font-bold">{inquiry.fullName}</h4>
+                        <p className="text-sm text-accent">{inquiry.email}</p>
+                      </div>
+                      <select 
+                        value={inquiry.status}
+                        onChange={(e) => handleUpdateStatus(inquiry.id, e.target.value)}
+                        className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-surface border border-border-dim ${
+                          inquiry.status === 'new' ? 'text-green-400 border-green-400/30' :
+                          inquiry.status === 'contacted' ? 'text-blue-400 border-blue-400/30' :
+                          'text-text-muted border-border-dim'
+                        }`}
+                      >
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="closed">Closed</option>
+                      </select>
                     </div>
-                    <select 
-                      value={inquiry.status}
-                      onChange={(e) => handleUpdateStatus(inquiry.id, e.target.value)}
-                      className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-surface border border-border-dim ${
-                        inquiry.status === 'new' ? 'text-green-400 border-green-400/30' :
-                        inquiry.status === 'contacted' ? 'text-blue-400 border-blue-400/30' :
-                        'text-text-muted border-border-dim'
-                      }`}
-                    >
-                      <option value="new">New</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <span className="text-text-muted uppercase font-bold block mb-1">Visa Type</span>
-                      <span className="text-text-secondary">{inquiry.visaType}</span>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="text-text-muted uppercase font-bold block mb-1">Visa Type</span>
+                        <span className="text-text-secondary">{inquiry.visaType}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-muted uppercase font-bold block mb-1">Date</span>
+                        <span className="text-text-secondary">
+                          {inquiry.createdAt?.toDate ? inquiry.createdAt.toDate().toLocaleDateString() : 'Pending...'}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-text-muted uppercase font-bold block mb-1">Date</span>
-                      <span className="text-text-secondary">
-                        {inquiry.createdAt?.toDate ? inquiry.createdAt.toDate().toLocaleDateString() : 'Pending...'}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="pt-4 border-t border-border-dim">
-                    <span className="text-text-muted uppercase font-bold block mb-2 text-xs">Message</span>
-                    <p className="text-sm text-text-secondary leading-relaxed">{inquiry.message}</p>
+                    <div className="pt-4 border-t border-border-dim">
+                      <span className="text-text-muted uppercase font-bold block mb-2 text-xs">Message</span>
+                      <p className="text-sm text-text-secondary leading-relaxed">{inquiry.message}</p>
+                    </div>
                   </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="max-w-2xl space-y-8">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <LinkIcon className="text-accent w-5 h-5" /> Webhook Integration
+                </h3>
+                <p className="text-sm text-text-secondary">
+                  Connect your inquiries to external tools like Google Sheets, Zapier, Make, or OdooCRM.
+                  Every new inquiry will be automatically sent to this URL as a POST request.
+                </p>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase text-text-muted ml-2">Webhook URL</label>
+                  <input 
+                    type="url"
+                    placeholder="https://hooks.zapier.com/..."
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    className="w-full bg-background border border-border-dim rounded-2xl px-6 py-4 focus:outline-none focus:border-accent transition-colors text-text-primary"
+                  />
                 </div>
-              ))
-            )}
-          </div>
+
+                <button 
+                  onClick={handleSaveSettings}
+                  disabled={isSavingSettings}
+                  className="px-8 py-3 bg-accent text-white font-bold rounded-full hover:bg-accent-hover transition-colors disabled:opacity-50"
+                >
+                  {isSavingSettings ? 'Saving...' : 'Save Integration Settings'}
+                </button>
+              </div>
+
+              <div className="p-6 bg-surface border border-border-dim rounded-[2rem] space-y-4">
+                <h4 className="font-bold text-sm uppercase tracking-wider text-accent">Direct Google Sheets Connection</h4>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  To connect to your specific spreadsheet, follow these 3 steps:
+                </p>
+                <ol className="text-sm text-text-secondary space-y-4 list-decimal ml-4">
+                  <li>
+                    Open your <a href="https://docs.google.com/spreadsheets/d/1eOcmi3dRqjZQ_701AvV_EJZ7JsbA6R7A7K4wI_BhqYk/edit" target="_blank" className="text-accent hover:underline font-bold">Spreadsheet</a>.
+                  </li>
+                  <li>
+                    Go to <b>Extensions &gt; Apps Script</b> and paste this code:
+                    <pre className="mt-2 p-4 bg-background border border-border-dim rounded-xl text-[10px] font-mono overflow-x-auto whitespace-pre">
+{`function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    data.fullName,
+    data.email,
+    data.visaType,
+    data.message,
+    data.createdAt
+  ]);
+  return ContentService.createTextOutput("Success");
+}`}
+                    </pre>
+                  </li>
+                  <li>
+                    Click <b>Deploy &gt; New Deployment</b>. Select "Web App". Set "Execute as: Me" and <b>"Who has access: Anyone"</b>. Copy the URL and paste it into the Webhook URL field above.
+                  </li>
+                  <li className="text-[10px] text-red-400/80 italic">
+                    <b>Troubleshooting:</b> If you see "Failed to fetch", ensure you selected "Who has access: <b>Anyone</b>" (not "Anyone with Google Account") and that you copied the <b>Web App URL</b>, not the Editor URL.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-8 pt-6 border-t border-border-dim flex justify-between items-center">

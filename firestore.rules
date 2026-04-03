@@ -114,5 +114,19 @@ service cloud.firestore {
       // Only the owner can update or delete
       allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.uid;
     }
+
+    match /settings/{settingId} {
+      function isValidSettings(data) {
+        return data.keys().hasAll(['webhookUrl', 'updatedAt']) &&
+               isValidUrl(data.url) &&
+               data.updatedAt is timestamp;
+      }
+      
+      // Anyone can read settings (to trigger webhooks client-side)
+      allow read: if true;
+      
+      // Only admins can update settings
+      allow write: if isAdmin();
+    }
   }
 }

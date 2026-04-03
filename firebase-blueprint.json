@@ -35,6 +35,15 @@
         "uid": { "type": "string", "description": "The Firebase Auth UID associated with this username." }
       },
       "required": ["email", "uid"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global application settings.",
+      "type": "object",
+      "properties": {
+        "webhookUrl": { "type": "string", "format": "uri", "description": "The URL for CRM or Spreadsheet integration (e.g., Zapier, Make, Odoo)." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "When the settings were last updated." }
+      }
     }
   },
   "firestore": {
@@ -49,6 +58,10 @@
     "/usernames/{username}": {
       "schema": "Username",
       "description": "Mapping of usernames to email addresses for login."
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "Global application settings."
     }
   }
 }
