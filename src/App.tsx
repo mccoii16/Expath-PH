@@ -1043,6 +1043,7 @@ const Footer = ({ logoUrl, theme }: { logoUrl: string | null, theme: 'light' | '
           <div className="flex gap-6">
             <a href="#" className="text-text-secondary hover:text-accent transition-colors">Privacy Policy</a>
             <a href="#" className="text-text-secondary hover:text-accent transition-colors">Terms of Service</a>
+            <Link to="/admin" className="text-text-secondary hover:text-accent transition-colors">Admin</Link>
           </div>
         </div>
       </div>
