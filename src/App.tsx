@@ -787,10 +787,10 @@ const Contact = () => {
   return (
     <section id="contact" className="py-32 bg-background">
       <div className="max-w-7xl mx-auto px-6 text-center">
-        <div className="max-w-3xl mx-auto mb-20">
+        <div className="max-w-full mx-auto mb-20">
           <h2 className="text-xs md:text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Get in Touch</h2>
-          <h3 className="text-4xl md:text-7xl font-extrabold tracking-tight mb-8">READY TO <br className="hidden md:block" /> SETTLE IN?</h3>
-          <p className="text-lg md:text-xl text-text-secondary mx-auto max-w-md">
+          <h3 className="text-3xl md:text-7xl font-extrabold tracking-tight mb-8 uppercase whitespace-nowrap">READY TO SETTLE IN?</h3>
+          <p className="text-base md:text-xl text-text-secondary mx-auto max-w-none whitespace-nowrap">
             Contact Sheila today for a free initial assessment of your visa requirements.
           </p>
         </div>
