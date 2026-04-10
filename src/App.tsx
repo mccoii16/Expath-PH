@@ -233,15 +233,16 @@ const Hero = ({ backgroundUrl }: { backgroundUrl: string | null }) => {
       {/* Parallax Background */}
       <motion.div 
         style={{ y: y1 }}
-        className="absolute inset-0 z-0 opacity-70"
+        className="absolute inset-0 z-0 opacity-90"
       >
         <img 
-          src={backgroundUrl || "https://www.expathph.com/web/image/1400-48653e6f/Background.webp?auto=format&fit=crop&q=80&w=1920"} 
+          src={backgroundUrl || "https://www.expathph.com/web/image/1400-48653e6f/Background.webp"} 
           alt="Cebu City Skyline" 
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40"></div>
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-center md:text-left">
@@ -907,9 +908,14 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
   const [visaFilter, setVisaFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'settings' | 'testimonials'>('inquiries');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'settings' | 'testimonials' | 'assets'>('inquiries');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isSavingAssets, setIsSavingAssets] = useState(false);
+  const [assetForm, setAssetForm] = useState({
+    logo: '',
+    background: ''
+  });
   const [copied, setCopied] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -952,12 +958,43 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
       }
     });
 
+    const unsubscribeAssets = onSnapshot(collection(db, 'assets'), (snapshot) => {
+      const assetsData: any = { logo: '', background: '' };
+      snapshot.docs.forEach(doc => {
+        if (doc.id === 'logo') assetsData.logo = doc.data().url;
+        if (doc.id === 'background') assetsData.background = doc.data().url;
+      });
+      setAssetForm(assetsData);
+    });
+
     return () => {
       unsubscribeInquiries();
       unsubscribeTestimonials();
       unsubscribeSettings();
+      unsubscribeAssets();
     };
   }, []);
+
+  const handleSaveAssets = async () => {
+    setIsSavingAssets(true);
+    try {
+      await setDoc(doc(db, 'assets', 'logo'), {
+        type: 'logo',
+        url: assetForm.logo,
+        updatedAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'assets', 'background'), {
+        type: 'background',
+        url: assetForm.background,
+        updatedAt: serverTimestamp()
+      });
+      alert('Assets updated successfully!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'assets');
+    } finally {
+      setIsSavingAssets(false);
+    }
+  };
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
@@ -1219,6 +1256,12 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
                   className={`text-2xl font-bold flex items-center gap-2 transition-colors ${activeTab === 'testimonials' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                 >
                   <Star className={activeTab === 'testimonials' ? 'text-accent' : ''} /> Testimonials
+                </button>
+                <button 
+                  onClick={() => setActiveTab('assets')}
+                  className={`text-2xl font-bold flex items-center gap-2 transition-colors ${activeTab === 'assets' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                >
+                  <Upload className={activeTab === 'assets' ? 'text-accent' : ''} /> Assets
                 </button>
                 <button 
                   onClick={() => setActiveTab('settings')}
@@ -1485,6 +1528,63 @@ const AdminPanel = ({ user, onClose }: { user: User, onClose: () => void }) => {
                     ))
                   )}
                 </div>
+              </div>
+            </div>
+          ) : activeTab === 'assets' ? (
+            <div className="max-w-2xl space-y-8">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Upload className="text-accent w-5 h-5" /> Brand Assets
+                </h3>
+                <p className="text-sm text-text-secondary">
+                  Manage your website's logo and main hero background image.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase text-text-muted ml-2">Logo URL</label>
+                    <div className="flex gap-4">
+                      <input 
+                        type="url"
+                        placeholder="https://..."
+                        value={assetForm.logo}
+                        onChange={(e) => setAssetForm({ ...assetForm, logo: e.target.value })}
+                        className="flex-1 bg-background border border-border-dim rounded-2xl px-6 py-4 focus:outline-none focus:border-accent transition-colors text-text-primary"
+                      />
+                      {assetForm.logo && (
+                        <div className="w-16 h-16 bg-surface border border-border-dim rounded-2xl flex items-center justify-center p-2">
+                          <img src={assetForm.logo} alt="Logo Preview" className="max-w-full max-h-full object-contain" referrerPolicy="no-referrer" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase text-text-muted ml-2">Hero Background URL</label>
+                    <div className="flex flex-col gap-4">
+                      <input 
+                        type="url"
+                        placeholder="https://..."
+                        value={assetForm.background}
+                        onChange={(e) => setAssetForm({ ...assetForm, background: e.target.value })}
+                        className="w-full bg-background border border-border-dim rounded-2xl px-6 py-4 focus:outline-none focus:border-accent transition-colors text-text-primary"
+                      />
+                      {assetForm.background && (
+                        <div className="w-full aspect-video bg-surface border border-border-dim rounded-2xl overflow-hidden">
+                          <img src={assetForm.background} alt="Background Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={handleSaveAssets}
+                  disabled={isSavingAssets}
+                  className="px-8 py-3 bg-accent text-white font-bold rounded-full hover:bg-accent-hover transition-colors disabled:opacity-50"
+                >
+                  {isSavingAssets ? 'Saving...' : 'Save Asset Settings'}
+                </button>
               </div>
             </div>
           ) : activeTab === 'inquiries' ? (
