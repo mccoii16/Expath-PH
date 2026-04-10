@@ -246,7 +246,7 @@ const Hero = ({ backgroundUrl }: { backgroundUrl: string | null }) => {
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-center md:text-left">
-        <div className="max-w-4xl md:max-w-6xl mx-auto md:mx-0">
+        <div className="max-w-4xl md:max-w-5xl mx-auto md:mx-0">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -256,7 +256,7 @@ const Hero = ({ backgroundUrl }: { backgroundUrl: string | null }) => {
               ACCREDITED MARKETER OF PRA | ACCREDITED AGENCY OF BUREAU OF IMMIGRATION
             </span>
             <h1 className="text-5xl md:text-8xl font-extrabold tracking-tighter leading-[0.95] md:leading-[0.9] mb-8 text-gradient">
-              YOUR GUIDE TO THE <br /> RIGHT VISA IN THE <br />PHILIPPINES
+              YOUR GUIDE TO THE RIGHT VISA IN THE PHILIPPINES
             </h1>
             <p className="text-lg md:text-2xl text-text-secondary font-medium max-w-2xl mx-auto md:mx-0 mb-10 leading-relaxed">
               Helping you secure the right Philippine visa with expert guidance, full legal compliance, and a smooth, worry-free process.
