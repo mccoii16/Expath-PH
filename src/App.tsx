@@ -790,8 +790,8 @@ const Contact = () => {
       <div className="max-w-7xl mx-auto px-6 text-center">
         <div className="max-w-full mx-auto mb-20">
           <h2 className="text-xs md:text-sm font-bold text-accent uppercase tracking-[0.3em] mb-4">Get in Touch</h2>
-          <h3 className="text-3xl md:text-7xl font-extrabold tracking-tight mb-8 uppercase whitespace-nowrap">READY TO SETTLE IN?</h3>
-          <p className="text-base md:text-xl text-text-secondary mx-auto max-w-none whitespace-nowrap">
+          <h3 className="text-3xl md:text-7xl font-extrabold tracking-tight mb-8 uppercase md:whitespace-nowrap">READY TO SETTLE IN?</h3>
+          <p className="text-base md:text-xl text-text-secondary mx-auto max-w-none md:whitespace-nowrap">
             Contact Sheila today for a free initial assessment of your visa requirements.
           </p>
         </div>
