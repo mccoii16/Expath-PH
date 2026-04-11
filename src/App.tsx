@@ -83,7 +83,7 @@ interface FirestoreErrorInfo {
   }
 }
 
-const ADMIN_EMAIL = "Martiligando@gmail.com";
+const ADMIN_EMAILS = ["Martiligando@gmail.com", "sheila@expathph.com"];
 
 // --- Helper Functions ---
 
@@ -2227,7 +2227,7 @@ export default function App() {
 
     const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      setIsAdmin(u?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      setIsAdmin(!!u?.email && ADMIN_EMAILS.some(email => email.toLowerCase() === u.email?.toLowerCase()));
     });
 
     const unsubscribeAssets = onSnapshot(collection(db, 'assets'), (snapshot) => {
