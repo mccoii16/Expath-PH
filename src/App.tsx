@@ -266,7 +266,7 @@ const Hero = ({ backgroundUrl }: { backgroundUrl: string | null }) => {
               <motion.a
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                href="https://calendly.com/expathph"
+                href="https://cal.id/sheila-ramos/free-srrv-consultation?overlayCalendar=true"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-4 bg-accent text-white font-bold rounded-full flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(0,123,255,0.4)]"
