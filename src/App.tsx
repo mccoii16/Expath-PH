@@ -34,6 +34,7 @@ import {
 
 // Firebase Imports
 import { db, auth } from './firebase';
+import SRRVPage from './pages/SRRVPage';
 import { 
   collection, 
   addDoc, 
@@ -123,10 +124,11 @@ const Navbar = ({ logoUrl, theme, toggleTheme }: { logoUrl: string | null, theme
   }, []);
 
   const navLinks = [
-    { name: 'Services', href: '#services' },
-    { name: 'About', href: '#about' },
-    { name: 'Testimonials', href: '#testimonials' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Services', href: '/#services' },
+    { name: 'SRRV Visa', href: '/srrv' },
+    { name: 'About', href: '/#about' },
+    { name: 'Testimonials', href: '/#testimonials' },
+    { name: 'Contact', href: '/#contact' },
   ];
 
   const darkLogo = "https://i.ibb.co/LB64mNt/White.png";
@@ -140,24 +142,35 @@ const Navbar = ({ logoUrl, theme, toggleTheme }: { logoUrl: string | null, theme
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
         >
-          <img src={currentLogo} alt="Expath PH Logo" className="h-8 md:h-10 object-contain" referrerPolicy="no-referrer" />
+          <Link to="/" className="flex items-center gap-2">
+            <img src={currentLogo} alt="Expath PH Logo" className="h-8 md:h-10 object-contain" referrerPolicy="no-referrer" />
+          </Link>
         </motion.div>
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link, i) => (
-            <motion.a
-              key={link.name}
-              href={link.href}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="text-sm font-medium text-text-secondary hover:text-accent transition-colors"
-            >
-              {link.name}
-            </motion.a>
+            link.href.startsWith('/') && !link.href.startsWith('/#') ? (
+              <Link
+                key={link.name}
+                to={link.href}
+                className="text-sm font-medium text-text-secondary hover:text-accent transition-colors"
+              >
+                {link.name}
+              </Link>
+            ) : (
+              <motion.a
+                key={link.name}
+                href={link.href}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="text-sm font-medium text-text-secondary hover:text-accent transition-colors"
+              >
+                {link.name}
+              </motion.a>
+            )
           ))}
           <button
             onClick={toggleTheme}
@@ -166,7 +179,9 @@ const Navbar = ({ logoUrl, theme, toggleTheme }: { logoUrl: string | null, theme
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
           <motion.a
-            href="#contact"
+            href="https://cal.id/sheila-ramos/free-srrv-consultation?overlayCalendar=true"
+            target="_blank"
+            rel="noopener noreferrer"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="px-6 py-2.5 bg-accent hover:bg-accent-hover text-white text-sm font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(0,123,255,0.3)]"
@@ -200,17 +215,30 @@ const Navbar = ({ logoUrl, theme, toggleTheme }: { logoUrl: string | null, theme
           >
             <div className="flex flex-col p-6 gap-4">
               {navLinks.map((link) => (
-                <a 
-                  key={link.name} 
-                  href={link.href} 
-                  className="text-lg font-medium py-2 text-text-secondary"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
+                link.href.startsWith('/') && !link.href.startsWith('/#') ? (
+                  <Link 
+                    key={link.name} 
+                    to={link.href} 
+                    className="text-lg font-medium py-2 text-text-secondary hover:text-accent"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ) : (
+                  <a 
+                    key={link.name} 
+                    href={link.href} 
+                    className="text-lg font-medium py-2 text-text-secondary hover:text-accent"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </a>
+                )
               ))}
               <a 
-                href="#contact" 
+                href="https://cal.id/sheila-ramos/free-srrv-consultation?overlayCalendar=true" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full py-4 bg-accent text-center text-white font-bold rounded-xl"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -435,6 +463,16 @@ const Services = () => {
               
               <h4 className="text-2xl md:text-3xl font-bold mb-4">{service.title}</h4>
               <p className="text-base md:text-lg leading-relaxed text-text-secondary">{service.desc}</p>
+              {service.title.includes("SRRV") && (
+                <div className="mt-6 pt-4 border-t border-border-dim">
+                  <Link 
+                    to="/srrv" 
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline"
+                  >
+                    View Dedicated SRRV Details & Requirements <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
@@ -1951,6 +1989,7 @@ const Footer = ({ logoUrl, theme }: { logoUrl: string | null, theme: 'light' | '
           </div>
 
           <div className="flex gap-6">
+            <Link to="/srrv" className="text-text-secondary hover:text-accent transition-colors">SRRV Visa</Link>
             <a href="#" className="text-text-secondary hover:text-accent transition-colors">Privacy Policy</a>
             <a href="#" className="text-text-secondary hover:text-accent transition-colors">Terms of Service</a>
             <Link to="/admin" className="text-text-secondary hover:text-accent transition-colors">Admin</Link>
@@ -2252,6 +2291,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage assets={assets} theme={theme} toggleTheme={toggleTheme} />} />
+          <Route path="/srrv" element={<SRRVPage logoUrl={assets.logo} theme={theme} toggleTheme={toggleTheme} />} />
+          <Route path="/services/srrv" element={<Navigate to="/srrv" replace />} />
           <Route path="/admin" element={<AdminPage user={user} isAdmin={isAdmin} theme={theme} toggleTheme={toggleTheme} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
